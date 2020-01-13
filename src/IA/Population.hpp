@@ -9,7 +9,7 @@ struct Population {
 	std::vector<std::vector<size_t>> species;
 	std::vector<Genome> specie_representatives;
 
-	float specie_treshold = 2;
+	float specie_treshold = 3.f;
 
 	float mutation_add_node = 0.005f;
 	float mutation_del_node = 0.0001f;
@@ -19,16 +19,16 @@ struct Population {
 	float mutation_weight_step = 0.05f;
 	float mutation_activation = 0.1f;
 
-	float speciation_size_inverse_power = 1.f;
-	float age_inverse_power = 0.f;
+	float speciation_size_inverse_power = 1.5f;
+	float age_influence = 1.f;
 
 	float to_kill = 0.5f;
 
 	void selection() noexcept;
 	void reproduction() noexcept;
+	void speciate() noexcept;
 
 	static Population generate(size_t pop_size, size_t n_inputs, size_t n_outputs) noexcept;
 
 private:
-	void generate_species() noexcept;
 };

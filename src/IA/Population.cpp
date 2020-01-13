@@ -8,8 +8,6 @@
 #include <algorithm>
 
 void Population::selection() noexcept {
-	generate_species();
-
 	float fitness_sum = 0;
 	for (size_t i = 0; i < genomes.size(); ++i) {
 		size_t n = 0;
@@ -21,20 +19,28 @@ void Population::selection() noexcept {
 
 		float divisor = std::max(n, (size_t)20);
 		divisor = std::powf(divisor, speciation_size_inverse_power);
-		divisor *= std::powf(genomes[i].age, age_inverse_power);
+		float mult = 2 * 2 / (1 + std::expf(-age_influence * genomes[i].age));
 
-		genomes[i].adjusted_fitness = genomes[i].fitness / divisor;
+		genomes[i].adjusted_fitness = mult * genomes[i].fitness / divisor;
+		
+
 		fitness_sum += genomes[i].adjusted_fitness;
 	}
 
-	float to_select = to_kill * to_kill;
+	float to_select = (1 - to_kill) * (1 - to_kill);
 
 	auto lamb = [&](auto a, auto b) {
 		return genomes[a].adjusted_fitness > genomes[b].adjusted_fitness;
 	};
 	for (auto& specie : species) {
 		std::sort(BEG_END(specie), lamb);
-		specie.resize((size_t)(to_select * specie.size()));
+		specie.resize((size_t)std::floor(to_select * specie.size()));
+	}
+	for (size_t i = 0; i < species.size(); ++i) {
+		if (species[i].empty()) {
+			species[i] = species.back();
+			species.pop_back();
+		}
 	}
 
 	auto pred = [&, i = 0](const Genome& x) mutable {
@@ -119,7 +125,7 @@ void Population::reproduction() noexcept {
 	for (auto& x : genomes) x.age++;
 }
 
-void Population::generate_species() noexcept {
+void Population::speciate() noexcept {
 
 	species.clear();
 	species.resize(specie_representatives.size());

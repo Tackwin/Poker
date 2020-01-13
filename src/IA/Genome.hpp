@@ -44,11 +44,13 @@ struct Genome {
 
 	float c1 = 1;
 	float c2 = 1;
-	float c3 = 1;
+	float c3 = 0.4;
 
 	float mutation_weight_step = 0.1f;
 
 	size_t age = 0;
+
+	bool marked = false;
 
 	void add_node_mutation() noexcept;
 	void weight_mutation(size_t i) noexcept;

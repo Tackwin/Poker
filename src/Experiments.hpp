@@ -17,7 +17,6 @@ struct Exp {
 	bool running = false;
 
 	size_t generation_number = 0;
-	int population_size = 0;
 	Population pop;
 
 	std::thread experiment_thread;
@@ -26,13 +25,16 @@ struct Exp {
 	std::condition_variable wait;
 
 	std::vector<Genome> bests;
+	int specie_selector = 0;
+	bool view_by_species = false;
+	std::vector<std::vector<Genome>> specie_bests;
 	std::vector<float> averages;
 
 	std::vector<float> species_size;
 	std::array<float, 100> cumulative_fitness;
 
 	virtual void epoch() noexcept = 0;
-	virtual void launch(size_t pop_size) noexcept;
+	virtual void launch() noexcept;
 
 	virtual void render(ImGui_State& imgui_state) noexcept;
 

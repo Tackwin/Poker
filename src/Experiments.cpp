@@ -5,6 +5,7 @@
 #include "Profiler/Timer.hpp"
 
 #include "macros.hpp"
+#include <algorithm>
 
 #include "imgui.h"
 #include "Extensions/imgui_ext.h"
@@ -62,8 +63,8 @@ void render_genome(Genome& genome) noexcept {
 	}
 }
 
-void Exp::launch(size_t pop_size) noexcept {
-	pop = Population::generate(pop_size, 3, 1);
+void Exp::launch() noexcept {
+	pop = Population::generate(pop.population_size, 3, 1);
 	generation_number = 0;
 	bests.clear();
 	averages.clear();
@@ -89,13 +90,14 @@ void Exp::render(ImGui_State& state) noexcept {
 }
 
 void Exp::render_stats(ImGui_State& imgui_state) noexcept {
-	std::scoped_lock lock(mutex);
 	if (ImGui::CollapsingHeader("Params")) {
 		ImGui::SliderFloat("Specie treshold", &pop.specie_treshold, 0, 10);
 	}
-	ImGui::SliderInt("Size", &population_size, 0, 100000);
+	int x = pop.population_size;
+	ImGui::SliderInt("Size", &x, 0, 100000);
+	pop.population_size = x;
 	if (ImGui::Button("Launch")) {
-		launch(population_size);
+		launch();
 	}
 	if (!population_created) {
 		ImGui::Text("You must first create a population.");
@@ -119,12 +121,20 @@ void Exp::render_stats(ImGui_State& imgui_state) noexcept {
 	ImGui::Text("Generation: %zu", generation_number);
 
 	ImGui::PlotLines("Best", [](void* data, int idx) {
-		return 1 / ((Genome*)data)[idx].fitness - 1;
+		return ((Genome*)data)[idx].fitness;
 	}, bests.data(), bests.size());
 
 	ImGui::PlotLines("Averages", averages.data(), averages.size());
 	ImGui::PlotHistogram("Cumulative", cumulative_fitness.data(), cumulative_fitness.size());
-	ImGui::PlotHistogram("Species size", species_size.data(), species_size.size());
+	ImGui::PlotHistogram(
+		"Species size",
+		species_size.data(),
+		species_size.size(),
+		0,
+		0,
+		0,
+		1.f * pop.population_size
+	);
 
 	ImGui::Text("Species: %zu", pop.species.size());
 
@@ -146,7 +156,7 @@ void Exp::render_params(ImGui_State& imgui_state) noexcept {
 	ImGui::SliderFloat("Weight step", &pop.mutation_weight_step, 0, 1);
 	ImGui::SliderFloat("Activation", &pop.mutation_activation, 0, 1);
 	ImGui::SliderFloat("Speciation influence", &pop.speciation_size_inverse_power, 0, 2, "%.3f", 2);
-	ImGui::SliderFloat("Age influence", &pop.age_inverse_power, 0, 2, "%.3f", 2);
+	ImGui::SliderFloat("Age influence", &pop.age_influence, 0, 2, "%.3f", 2);
 }
 
 Xor_Exp::Xor_Exp() noexcept { name = "Xor"; }
@@ -195,13 +205,18 @@ void Xor_Exp::epoch() noexcept {
 	bests.push_back(*best);
 	averages.push_back(avg);
 	species_size.clear();
+	specie_bests.push_back({});
+	for (auto& x : pop.species) {
+		size_t best = x.front();
+		for (auto& g : x) if (pop.genomes[best].fitness < pop.genomes[g].fitness) best = g;
+		specie_bests.back().push_back(pop.genomes[best]);
+	}
 	for (auto& x : pop.species) species_size.push_back(1.f * x.size());
 	mutex.unlock();
 
 	pop.selection();
-
-	auto t1 = seconds();
 	pop.reproduction();
+	pop.speciate();
 
 	std::sort(BEG_END(fitnesses), [](auto a, auto b) { return a > b; });
 	for (size_t i = 0; i < 100; ++i) {
@@ -212,6 +227,7 @@ void Xor_Exp::epoch() noexcept {
 }
 
 void Xor_Exp::render(ImGui_State& state) noexcept {
+	std::scoped_lock lock(mutex);
 	ImGui::Begin(name.c_str());
 	defer { ImGui::End(); };
 
@@ -232,7 +248,19 @@ void Xor_Exp::render(ImGui_State& state) noexcept {
 
 	ImGui::Separator();
 
-	if (!bests.empty()) {
+	int max_slider = specie_bests.empty() ? 0 : (int)(specie_bests.back().size()) - 1;
+	max_slider = max_slider > 0 ? max_slider : 0;
+	specie_selector = std::clamp(specie_selector, 0, max_slider);
+	ImGui::SliderInt("X", &specie_selector, 0, max_slider);
+	ImGui::Checkbox("By Specie", &view_by_species);
+
+	if (view_by_species && specie_bests.size() > 1) {
+		auto& x = specie_bests.back()[specie_selector];
+		//ImGui::SameLine();
+		//ImGui::Checkbox("Mark", &x.marked)
+		render_genome(x);
+	}
+	else if (!bests.empty()) {
 		render_genome(bests.back());
 	}
 }

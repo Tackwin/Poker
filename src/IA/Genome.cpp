@@ -208,28 +208,32 @@ Genome Genome::generate(size_t n_inputs, size_t n_outputs) noexcept {
 		node.id = 4;
 		genome.node_genes.push_back(node);
 
+		node.kind = NodeGene::Kind::Hidden;
+		node.id = 5;
+		genome.node_genes.push_back(node);
+
 		ConnectionGene connec;
-		connec.enabled = true;
-		connec.in = 0;
-		connec.out = 3;
-		connec.w = -.5f;
-		//connec.w = randomf() * 2 - 1;
-		connec.innov = ConnectionGene::Innov_N++;
-		genome.connection_genes.push_back(connec);
-
-		connec.in = 1;
-		connec.out = 3;
-		connec.w = 1;
-		//connec.w = randomf() * 2 - 1;
-		connec.innov = ConnectionGene::Innov_N++;
-		genome.connection_genes.push_back(connec);
-
-		connec.in = 2;
-		connec.out = 3;
-		connec.w = 1;
-		//connec.w = randomf() * 2 - 1;
-		connec.innov = ConnectionGene::Innov_N++;
-		genome.connection_genes.push_back(connec);
+		//connec.enabled = true;
+		//connec.in = 0;
+		//connec.out = 3;
+		//connec.w = -.5f;
+		////connec.w = randomf() * 2 - 1;
+		//connec.innov = ConnectionGene::Innov_N++;
+		//genome.connection_genes.push_back(connec);
+//
+		//connec.in = 1;
+		//connec.out = 3;
+		//connec.w = 1;
+		////connec.w = randomf() * 2 - 1;
+		//connec.innov = ConnectionGene::Innov_N++;
+		//genome.connection_genes.push_back(connec);
+//
+		//connec.in = 2;
+		//connec.out = 3;
+		//connec.w = 1;
+		////connec.w = randomf() * 2 - 1;
+		//connec.innov = ConnectionGene::Innov_N++;
+		//genome.connection_genes.push_back(connec);
 
 		connec.in = 4;
 		connec.out = 3;
@@ -258,6 +262,41 @@ Genome Genome::generate(size_t n_inputs, size_t n_outputs) noexcept {
 		//connec.w = randomf() * 2 - 1;
 		connec.innov = ConnectionGene::Innov_N++;
 		genome.connection_genes.push_back(connec);
+
+		connec.in = 0;
+		connec.out = 5;
+		connec.w = -1.5f;
+		//connec.w = randomf() * 2 - 1;
+		connec.innov = ConnectionGene::Innov_N++;
+		genome.connection_genes.push_back(connec);
+
+		connec.in = 1;
+		connec.out = 5;
+		connec.w = 1;
+		//connec.w = randomf() * 2 - 1;
+		connec.innov = ConnectionGene::Innov_N++;
+		genome.connection_genes.push_back(connec);
+
+		connec.in = 2;
+		connec.out = 5;
+		connec.w = 1;
+		//connec.w = randomf() * 2 - 1;
+		connec.innov = ConnectionGene::Innov_N++;
+		genome.connection_genes.push_back(connec);
+
+		connec.in = 5;
+		connec.out = 3;
+		connec.w = 1;
+		//connec.w = randomf() * 2 - 1;
+		connec.innov = ConnectionGene::Innov_N++;
+		genome.connection_genes.push_back(connec);
+		
+		connec.in = 0;
+		connec.out = 3;
+		connec.w = 1;
+		//connec.w = randomf() * 2 - 1;
+		connec.innov = ConnectionGene::Innov_N++;
+		//genome.connection_genes.push_back(connec);
 
 		genome.n_inputs = 3;
 		genome.n_outputs = 1;
